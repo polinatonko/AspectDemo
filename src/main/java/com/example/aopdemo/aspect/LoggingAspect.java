@@ -5,9 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -44,15 +42,10 @@ public class LoggingAspect {
     @Around("endpointPointcut()")
     public Object measureTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
-        try {
-            var result = joinPoint.proceed();
-            long execTime = System.currentTimeMillis() - startTime;
-            logger.info("{} execution time: {} ms", getMethodName(joinPoint), execTime);
-            return result;
-        }
-        catch (Exception ex) {
-            return ResponseEntity.internalServerError().body("Interval server error.");
-        }
+        var result = joinPoint.proceed();
+        long execTime = System.currentTimeMillis() - startTime;
+        logger.info("{} execution time: {} ms", getMethodName(joinPoint), execTime);
+        return result;
     }
 
     private String getMethodName(JoinPoint joinPoint) {

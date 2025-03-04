@@ -1,5 +1,6 @@
 package com.example.aopdemo.aspect;
 
+import com.example.aopdemo.exception.UnauthorizedException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -7,7 +8,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,14 +25,14 @@ public class SecuredAspect {
     @Around(value = "weatherPointcut(annotation)", argNames = "joinPoint,annotation")
     public Object beforeWeatherEndpoint(ProceedingJoinPoint joinPoint, SecuredEndpoint annotation) throws Throwable {
         if (!isAuthorized(joinPoint, annotation)) {
-            return ResponseEntity.status(401).body("Unauthorized: invalid secret key.");
+            throw new UnauthorizedException("Unauthorized: invalid secret key.");
         }
         try {
             return joinPoint.proceed();
         }
-        catch (Exception ex) {
+        catch (Throwable ex) {
             logger.error("Error during execution of {}: {}", joinPoint.getSignature(), ex.getMessage());
-            return ResponseEntity.internalServerError().body("Interval server error.");
+            throw ex;
         }
     }
 
